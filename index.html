@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGIN</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        /* Add custom styles here if needed */
+        body {
+            background-image: url('toling.jpg'); /* Replace 'your-image-url.jpg' with your actual image URL */
+            background-size: cover;
+            /* background-color: black; */
+            background-position: center;
+            background-repeat: repeat-y;
+          }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card bg-warning">
+                    <div class="card-header">
+                        <h4>Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-block" onclick="validateLogin()">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const users = [
+        { username: 'user1', password: 'pass1', name: 'pradeep tumbinavar',type:'type4',vehicle:'suzuki breeza',vehicleid:'ka23x9746' ,balance:1000},
+        { username: 'user2', password: 'pass2', name: 'aditi kulkarni' ,type:'type5',vehicle:'mahindra bolero',vehicleid:'tn59x4342' ,balance:1000},
+        { username: 'user3', password: 'pass3', name: 'sagar bagalkoti',type:'type6',vehicle:'bharathbenz xmr',vehicleid:'nh02x2446' ,balance:1000},
+        { username: 'user4', password: 'pass4', name: 'ramya kulkarni' ,type:'type7',vehicle:'volvo b12r',vehicleid:'hr26x3455', balance:1000},
+    ];
+    
+    function validateLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+    
+        const user = users.find(u => u.username === username && u.password === password);
+    
+        if (user) {
+            localStorage.setItem('loggedInUser', JSON.stringify(user));
+            alert('logged in successfully ✅');
+            window.location.href = 'main.html';
+            
+        } else {
+            alert('Invalid username or password❌');
+        }
+    }
+    </script>
+</body>
+</html>

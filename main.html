@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS TOLL DASHBOARD</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-image: url('toling.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: repeat-y;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            border: 2px solid black;
+            border-radius: 4px;
+        }
+
+        .map-container > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h3 class="text-center text-white">TOLL DASHBOARD</h3>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card bg-warning">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4>Welcome <p class="username"></p></h4>
+                        <button class="btn btn-primary d-block d-md-none" type="button" data-toggle="collapse" data-target="#userDetailsCollapse" aria-expanded="false" aria-controls="userDetailsCollapse">
+                            <i class="bi bi-arrow-down-circle"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="collapse show" id="userDetailsCollapse">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="username"></p>
+                                    <p id="type"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p id="vehicle"></p>
+                                    <p id="vehicleid"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card bg-warning">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div id="tollmoney" class="text-left">Toll Amount Calculated: 0</div>
+                        <div id="balance" class="text-right">Balance: 1000 Rs</div>
+                    </div>
+                    <div class="card-body">
+                        <button onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
+                        <p>STATUS ⚠️:</p>
+                        <div id="output"></div>
+                        <p>SPEED:</p>
+                        <div id="speed"></div>
+                        <p>LIVE LOCATION:</p>
+                        <div id="demo2" class="map-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var watchID;
+        var geoLoc;
+        var prevLatitude = null;
+        var prevLongitude = null;
+        var totalDistance = 0; // Total distance traveled
+        var tollAmountfinal = 0;
+        var distanceCalculationActive = false;
+
+        // Start and finish line boundaries
+        let startLineLHS = [15.375968,75.111789]; // Start line left boundary
+        let startLineRHS = [15.376527,75.111519]; // Start line right boundary
+        let finishLineLHS = [15.373651,75.106346]; // finish line left boundary
+        let finishLineRHS = [15.374484,75.105931]; // finish line right boundary
+
+        // Start monitoring location
+        function geoFence() {
+            if (navigator.geolocation) {
+                var options = { enableHighAccuracy: true };
+                geoLoc = navigator.geolocation;
+                watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
+                // Disable the button to prevent multiple clicks
+                document.querySelector("button").disabled = true;
+                initializeMap();
+            }
+        }
+
+        // Function to initialize the map
+        function initializeMap() {
+            var initialOptions = {
+                center: { lat: 0, lng: 0 },
+                zoom: 10,
+                mapTypeControl: true,
+                navigationControlOptions: {
+                    style: google.maps.NavigationControlStyle.SMALL,
+                },
+            };
+
+            map = new google.maps.Map(document.getElementById("demo2"), initialOptions);
+
+            marker = new google.maps.Marker({
+                position: { lat: 0, lng: 0 },
+                map: map,
+                title: "You are here!"
+            });
+        }
+
+        // Showing Location
+        function showLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            document.getElementById('location').innerHTML = 'Latitude: ' + latitude + ', Longitude: ' + longitude;
+
+            if (prevLatitude !== null && prevLongitude !== null && distanceCalculationActive) {
+                var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
+                totalDistance += distance;
+                tollAmountfinal = calculateToll(totalDistance);
+                updateUIAndDeductToll();
+                document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
+            }
+            prevLatitude = latitude;
+            prevLongitude = longitude;
+
+            var speed = position.coords.speed;
+
+            if (speed !== null) {
+                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
+            } else {
+                document.getElementById('speed').innerHTML = 'Speed: N/A';
+            }
+
+            if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
+                distanceCalculationActive = true;
+                document.getElementById('output').innerHTML = 'Crossed the start line! 🏁';
+            }
+
+            if (isCrossingLine(finishLineLHS, finishLineRHS, latitude, longitude)) {
+                distanceCalculationActive = false;
+                document.getElementById('output').innerHTML = 'Crossed the finish line!🛑';
+                stopGeoFence();
+            }
+
+            updateMap(latitude, longitude);
+        }
+
+        // Function to calculate distance between two coordinates using Haversine formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371e3;
+            var φ1 = lat1 * Math.PI / 180;
+            var φ2 = lat2 * Math.PI / 180;
+            var Δφ = (lat2 - lat1) * Math.PI / 180;
+            var Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            var distance = R * c;
+            return distance;
+        }
+
+        // Function to check if the user's location is crossing the line defined by two points
+        function isCrossingLine(point1, point2, lat, long) {
+            var minLat = Math.min(point1[0], point2[0]);
+            var maxLat = Math.max(point1[0], point2[0]);
+            var withinLatRange = ((lat > minLat || lat == minLat) && (lat < maxLat || lat == maxLat));
+
+            var minLong = Math.min(point1[1], point2[1]);
+            var maxLong = Math.max(point1[1], point2[1]);
+            var withinLongRange = ((long > minLong || long == minLong) && (long < maxLong || long == maxLong));
+
+            return (withinLatRange && withinLongRange);
+        }
+
+        // Function to update the map with new location
+        function updateMap(latitude, longitude) {
+            var latLng = new google.maps.LatLng(latitude, longitude);
+            marker.setPosition(latLng);
+            map.setCenter(latLng);
+        }
+
+        // Stop monitoring location
+        function stopGeoFence() {
+            if (geoLoc) {
+                geoLoc.clearWatch(watchID);
+            }
+        }
+
+        // Handling errors
+        function errorHandler(err) {
+            if (err.code == 1) {
+                alert("Error: Access is denied!");
+            } else if (err.code == 2) {
+                alert("Error: Position is unavailable!");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (loggedInUser) {
+                const usernameElements = document.querySelectorAll('.username');
+                usernameElements.forEach(function(element) {
+                    element.textContent = loggedInUser.name;
+                });
+                document.getElementById('type').textContent = 'Vehicle Type: ' + loggedInUser.type;
+                document.getElementById('vehicle').textContent = 'Vehicle Name: ' + loggedInUser.vehicle;
+                document.getElementById('vehicleid').textContent = 'Vehicle ID: ' + loggedInUser.vehicleid;
+            }
+        });
+
+        // Function to calculate toll amount based on distance and vehicle type
+        function calculateToll(distance) {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            const tollRates = {
+                type4: 2,
+                type5: 3,
+                type6: 4,
+                type7: 5
+            };
+            const tollAmount = distance * tollRates[loggedInUser.type];
+            return tollAmount;
+        }
+
+        // Function to update UI with calculated toll amount and deduct toll from user's balance
+        function updateUIAndDeductToll() {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            document.getElementById('tollmoney').innerText = 'Toll Amount Calculated: ' + tollAmountfinal + ' Rs';
+            loggedInUser.balance -= tollAmountfinal;
+            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+            document.getElementById('balance').innerText = 'Balance: ' + loggedInUser.balance + ' Rs';
+        }
+    </script>
+</body>
+</html>
