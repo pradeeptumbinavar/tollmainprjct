@@ -70,20 +70,20 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card bg-warning">
-                    <div class="card-header d-flex justify-content-around align-items-center">
+                    <div class="card-header flex-column d-flex justify-content-around align-items-center">
                         <div id="tollmoney" class="text-center">Toll Amount Calculated: 0 Rs</div>
                         <div id="balance" class="text-center">Balance: 1000 Rs</div>
                     </div>
                     <div class="card-body">
                         <button id="button2" onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
                         <p>STATUS ⚠️:</p>
-                        <div id="output" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <div id="output" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
                         <p>LIVE CORDINATES 📍</p>
-                        <div id="location" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <div id="location" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
                         <p>DISTANCE TRAVELED:</p>
-                        <div id="distance" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <div id="distance" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
                         <p>SPEED:</p>
-                        <div id="speed" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <div id="speed" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
                         <p>LIVE LOCATION:</p>
                         <div id="demo2" class="map-container"></div>
                     </div>
@@ -99,7 +99,7 @@
         var prevLongitude = null;
         var totalDistance = 0; // Total distance traveled
         var tollAmountfinal = 0;
-        var distanceCalculationActive = false;
+        var distanceCalculationActive;
 
         // Start and finish line boundaries
         // Start and finish line boundaries
@@ -115,6 +115,7 @@
                 watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
                 // Disable the button to prevent multiple clicks
                 document.getElementById("button2").disabled = true;
+                distanceCalculationActive=true;
                 initializeMap();
             }
         }
@@ -123,10 +124,10 @@
         function initializeMap() {
             var initialOptions = {
                 center: { lat: 0, lng: 0 },
-                zoom: 20,
+                zoom: 10,
                 mapTypeControl: true,
                 navigationControlOptions: {
-                    style: google.maps.NavigationControlStyle.LARGE,
+                    style: google.maps.NavigationControlStyle.SMALL,
                 },
             };
 
@@ -145,6 +146,25 @@
             var longitude = position.coords.longitude;
             document.getElementById('location').innerHTML = 'Latitude: ' + latitude + ', Longitude: ' + longitude;
 
+
+            if(distanceCalculationActive){
+                if (prevLatitude !== null && prevLongitude !== null) {
+                    var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
+                    totalDistance += distance;
+                    document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
+                }
+            }
+            prevLatitude = latitude;
+            prevLongitude = longitude;
+
+            var speed = position.coords.speed;
+
+            if (speed !== null) {
+                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
+            } else {
+                document.getElementById('speed').innerHTML = 'Speed: N/A';
+            }
+
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
                 distanceCalculationActive = true;
                 document.getElementById('output').innerHTML = 'Crossed the start line! 🏁';
@@ -156,29 +176,13 @@
                 stopGeoFence();
             }
 
-            updateMap(latitude, longitude);
-
-            if (prevLatitude !== null && prevLongitude !== null && distanceCalculationActive) {
-                var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
-                totalDistance += distance;
-                document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
-            }
-            prevLatitude = latitude;
-            prevLongitude = longitude;
-
             if(!distanceCalculationActive){
                 tollAmountfinal = calculateToll(totalDistance);
                 updateUIAndDeductToll();
 
             }
 
-            var speed = position.coords.speed;
-
-            if (speed !== null) {
-                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
-            } else {
-                document.getElementById('speed').innerHTML = 'Speed: N/A';
-            }
+            updateMap(latitude, longitude);
 
             
         }
