@@ -70,16 +70,20 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card bg-warning">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div id="tollmoney" class="text-left">Toll Amount Calculated: 0</div>
-                        <div id="balance" class="text-right">Balance: 1000 Rs</div>
+                    <div class="card-header d-flex justify-content-around align-items-center">
+                        <div id="tollmoney" class="text-center">Toll Amount Calculated: 0 Rs</div>
+                        <div id="balance" class="text-center">Balance: 1000 Rs</div>
                     </div>
                     <div class="card-body">
-                        <button onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
+                        <button id="button2" onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
                         <p>STATUS ⚠️:</p>
-                        <div id="output"></div>
+                        <div id="output" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <p>LIVE CORDINATES 📍</p>
+                        <div id="location" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
+                        <p>DISTANCE TRAVELED:</p>
+                        <div id="distance" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
                         <p>SPEED:</p>
-                        <div id="speed"></div>
+                        <div id="speed" style="border-radius:4px; border: 2px solid black; padding:2px; height:35px;"></div>
                         <p>LIVE LOCATION:</p>
                         <div id="demo2" class="map-container"></div>
                     </div>
@@ -98,11 +102,11 @@
         var distanceCalculationActive = false;
 
         // Start and finish line boundaries
-        let startLineLHS = [15.375968,75.111789]; // Start line left boundary
-        let startLineRHS = [15.376527,75.111519]; // Start line right boundary
-        let finishLineLHS = [15.373651,75.106346]; // finish line left boundary
-        let finishLineRHS = [15.374484,75.105931]; // finish line right boundary
-
+        // Start and finish line boundaries
+        let startLineLHS = [15.351520,75.082336]; // Start line left boundary
+        let startLineRHS = [15.351476,75.082070]; // Start line right boundary
+        let finishLineLHS = [15.350842,75.082478];//finsih line left boundary
+        let finishLineRHS = [15.350787,75.082135];//finish line right boundary
         // Start monitoring location
         function geoFence() {
             if (navigator.geolocation) {
@@ -110,7 +114,7 @@
                 geoLoc = navigator.geolocation;
                 watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
                 // Disable the button to prevent multiple clicks
-                document.querySelector("button").disabled = true;
+                document.getElementById("button2").disabled = true;
                 initializeMap();
             }
         }
@@ -119,10 +123,10 @@
         function initializeMap() {
             var initialOptions = {
                 center: { lat: 0, lng: 0 },
-                zoom: 10,
+                zoom: 20,
                 mapTypeControl: true,
                 navigationControlOptions: {
-                    style: google.maps.NavigationControlStyle.SMALL,
+                    style: google.maps.NavigationControlStyle.LARGE,
                 },
             };
 
@@ -141,24 +145,6 @@
             var longitude = position.coords.longitude;
             document.getElementById('location').innerHTML = 'Latitude: ' + latitude + ', Longitude: ' + longitude;
 
-            if (prevLatitude !== null && prevLongitude !== null && distanceCalculationActive) {
-                var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
-                totalDistance += distance;
-                tollAmountfinal = calculateToll(totalDistance);
-                updateUIAndDeductToll();
-                document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
-            }
-            prevLatitude = latitude;
-            prevLongitude = longitude;
-
-            var speed = position.coords.speed;
-
-            if (speed !== null) {
-                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
-            } else {
-                document.getElementById('speed').innerHTML = 'Speed: N/A';
-            }
-
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
                 distanceCalculationActive = true;
                 document.getElementById('output').innerHTML = 'Crossed the start line! 🏁';
@@ -171,6 +157,30 @@
             }
 
             updateMap(latitude, longitude);
+
+            if (prevLatitude !== null && prevLongitude !== null && distanceCalculationActive) {
+                var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
+                totalDistance += distance;
+                document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
+            }
+            prevLatitude = latitude;
+            prevLongitude = longitude;
+
+            if(!distanceCalculationActive){
+                tollAmountfinal = calculateToll(totalDistance);
+                updateUIAndDeductToll();
+
+            }
+
+            var speed = position.coords.speed;
+
+            if (speed !== null) {
+                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
+            } else {
+                document.getElementById('speed').innerHTML = 'Speed: N/A';
+            }
+
+            
         }
 
         // Function to calculate distance between two coordinates using Haversine formula
