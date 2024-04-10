@@ -76,8 +76,8 @@
             <div class="col-md-6">
                 <div class="card bg-warning shadow-lg mb-4">
                     <div class="card-header flex-column d-flex justify-content-around align-items-center">
-                        <div id="tollmoney" class="text-center"><h6>Toll Amount Calculated:</h6> 0 Rs</div>
-                        <div id="balance" class="text-center"><h6>Toll Amount Calculated:</h6> 1000 Rs</div>
+                        <div class="bfont" id="tollmoney" class="text-center"><h6>Toll Amount Calculated:</h6> 0 Rs</div>
+                        <div class="bfont" id="balance" class="text-center"><h6>Toll Amount Calculated:</h6> 1000 Rs</div>
                     </div>
                     <div class="card-body">
                         <button id="button2" onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
@@ -178,13 +178,13 @@
             }
 
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
-                document.getElementById('output').innerHTML = '<h6>Crossed the start line! 🏁</h6>';
+                document.getElementById('output').innerHTML = '<h6>Entered Highway ⚠️</h6>';
                 distanceCalculationActive = true;
                 calculateActive();
             }
 
             if (isCrossingLine(finishLineLHS, finishLineRHS, latitude, longitude)) {
-                document.getElementById('output').innerHTML = '<h6>Crossed the finish line!🛑</h6>';
+                document.getElementById('output').innerHTML = '<h6>Exited Highway ⚠️</h6>';
                 distanceCalculationActive = false;
                 stopGeoFence();
             }
@@ -270,10 +270,10 @@
         function calculateToll(distance) {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
             const tollRates = {
-                type4: 2,
-                type5: 3,
-                type6: 4,
-                type7: 5
+                Type4: 2,
+                Type5: 3,
+                Type6: 4,
+                Type7: 5
             };
             const tollAmount = distance * tollRates[loggedInUser.type];
             return tollAmount;
@@ -282,10 +282,10 @@
         // Function to update UI with calculated toll amount and deduct toll from user's balance
         function updateUIAndDeductToll() {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            document.getElementById('tollmoney').innerText = '<h6>Toll Amount Calculated:</h6> ' + tollAmountfinal + ' Rs';
+            document.getElementById('tollmoney').innerText = 'Toll Amount Calculated: ' + tollAmountfinal + ' Rs';
             loggedInUser.balance -= tollAmountfinal;
             localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-            document.getElementById('balance').innerText = '<h6>Balance:</h6> ' + loggedInUser.balance + ' Rs';
+            document.getElementById('balance').innerText = 'Balance: ' + loggedInUser.balance + ' Rs';
         }
     </script>
 </body>
