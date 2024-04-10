@@ -34,17 +34,21 @@
             width: 100%;
             height: 100%;
         }
+
+        .bfont{
+            font-weight: bolder;
+        }
     </style>
     <script src="https://maps.google.com/maps/api/js?sensor=false"></script>
 </head>
 <body>
-    <h3 class="text-center text-white">TOLL DASHBOARD</h3>
+    <h3 class="text-center text-white mt-3">TOLL DASHBOARD</h3>
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="card bg-warning">
+                <div class="card bg-warning shadow-lg">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4>Welcome <p class="username"></p></h4>
+                        <h4>Welcome 👋<p class="username"></p></h4>
                         <button class="btn btn-primary d-block d-md-none" type="button" data-toggle="collapse" data-target="#userDetailsCollapse" aria-expanded="false" aria-controls="userDetailsCollapse">
                             <i class="bi bi-arrow-down-circle"></i>
                         </button>
@@ -53,12 +57,12 @@
                         <div class="collapse show" id="userDetailsCollapse">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p class="username"></p>
-                                    <p id="type"></p>
+                                    <p class="username bfont"></p>
+                                    <p id="type" class="bfont"></p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p id="vehicle"></p>
-                                    <p id="vehicleid"></p>
+                                    <p id="vehicle" class="bfont"></p>
+                                    <p id="vehicleid" class="bfont"></p>
                                 </div>
                             </div>
                         </div>
@@ -70,22 +74,27 @@
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="card bg-warning">
+                <div class="card bg-warning shadow-lg mb-4">
                     <div class="card-header flex-column d-flex justify-content-around align-items-center">
-                        <div id="tollmoney" class="text-center">Toll Amount Calculated: 0 Rs</div>
-                        <div id="balance" class="text-center">Balance: 1000 Rs</div>
+                        <div id="tollmoney" class="text-center"><h6>Toll Amount Calculated:</h6> 0 Rs</div>
+                        <div id="balance" class="text-center"><h6>Toll Amount Calculated:</h6> 1000 Rs</div>
                     </div>
                     <div class="card-body">
                         <button id="button2" onclick="geoFence()" class="btn btn-primary btn-lg btn-block">BEGIN TRACKING✅</button>
-                        <p>STATUS ⚠️:</p>
+                        &nbsp;
+                        <p>STATUS ℹ️</p>
                         <div id="output" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
+                        &nbsp;
                         <p>LIVE CORDINATES 📍</p>
                         <div id="location" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
-                        <p>DISTANCE TRAVELED:</p>
+                        &nbsp;
+                        <p>DISTANCE TRAVELED 🛣️</p>
                         <div id="distance" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
-                        <p>SPEED:</p>
+                        &nbsp;
+                        <p>SPEED 💨</p>
                         <div id="speed" style="border-radius:4px; border: 2px solid black; padding:2px;"></div>
-                        <p>LIVE LOCATION:</p>
+                        &nbsp;
+                        <p>LIVE LOCATION 🌍</p>
                         <div id="demo2" class="map-container"></div>
                     </div>
                 </div>
@@ -116,7 +125,7 @@
                 watchID = geoLoc.watchPosition(showLocation, errorHandler, options);
                 // Disable the button to prevent multiple clicks
                 document.getElementById("button2").disabled = true;
-                distanceCalculationActive=true;
+                document.getElementById('output').innerHTML = '<h6>Tracking has started☑️</h6>';
                 initializeMap();
             }
         }
@@ -125,7 +134,7 @@
         function initializeMap() {
             var initialOptions = {
                 center: { lat: 0, lng: 0 },
-                zoom: 10,
+                zoom: 18,
                 mapTypeControl: true,
                 navigationControlOptions: {
                     style: google.maps.NavigationControlStyle.SMALL,
@@ -141,39 +150,42 @@
             });
         }
 
-        // Showing Location
-        function showLocation(position) {
+        function calculateActive(){
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
-            document.getElementById('location').innerHTML = 'Latitude: ' + latitude + ', Longitude: ' + longitude;
-
-
             if(distanceCalculationActive){
                 if (prevLatitude !== null && prevLongitude !== null) {
                     var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
                     totalDistance += distance;
-                    document.getElementById('distance').innerHTML = 'Total Distance Traveled : ' + totalDistance.toFixed(2) + ' meters';
+                    document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
                 }
             }
             prevLatitude = latitude;
             prevLongitude = longitude;
+        };
 
+        // Showing Location
+        function showLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            document.getElementById('location').innerHTML = '<h6>Latitude:</h6> ' + latitude + ', <h6>Longitude:</h6> ' + longitude;
             var speed = position.coords.speed;
 
             if (speed !== null) {
-                document.getElementById('speed').innerHTML = 'Speed: ' + speed.toFixed(2) + ' m/s';
+                document.getElementById('speed').innerHTML = '<h6>Speed:</h6> ' + speed.toFixed(2) + ' m/s';
             } else {
-                document.getElementById('speed').innerHTML = 'Speed: N/A';
+                document.getElementById('speed').innerHTML = '<h6>Speed:</h6> N/A';
             }
 
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
+                document.getElementById('output').innerHTML = '<h6>Crossed the start line! 🏁</h6>';
                 distanceCalculationActive = true;
-                document.getElementById('output').innerHTML = 'Crossed the start line! 🏁';
+                calculateActive();
             }
 
             if (isCrossingLine(finishLineLHS, finishLineRHS, latitude, longitude)) {
+                document.getElementById('output').innerHTML = '<h6>Crossed the finish line!🛑</h6>';
                 distanceCalculationActive = false;
-                document.getElementById('output').innerHTML = 'Crossed the finish line!🛑';
                 stopGeoFence();
             }
 
@@ -270,10 +282,10 @@
         // Function to update UI with calculated toll amount and deduct toll from user's balance
         function updateUIAndDeductToll() {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            document.getElementById('tollmoney').innerText = 'Toll Amount Calculated: ' + tollAmountfinal + ' Rs';
+            document.getElementById('tollmoney').innerText = '<h6>Toll Amount Calculated:</h6> ' + tollAmountfinal + ' Rs';
             loggedInUser.balance -= tollAmountfinal;
             localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-            document.getElementById('balance').innerText = 'Balance: ' + loggedInUser.balance + ' Rs';
+            document.getElementById('balance').innerText = '<h6>Balance:</h6> ' + loggedInUser.balance + ' Rs';
         }
     </script>
 </body>
