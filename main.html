@@ -109,7 +109,7 @@
         var prevLongitude = null;
         var totalDistance = 0; // Total distance traveled
         var tollAmountfinal = 0;
-        var distanceCalculationActive;
+        //var distanceCalculationActive;
 
         // Start and finish line boundaries
         // Start and finish line boundaries
@@ -150,19 +150,11 @@
             });
         }
 
-        function calculateActive(){
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            if(distanceCalculationActive){
-                if (prevLatitude !== null && prevLongitude !== null) {
-                    var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
-                    totalDistance += distance;
-                    document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
-                }
-            }
-            prevLatitude = latitude;
-            prevLongitude = longitude;
-        };
+        //function calculateActive(){
+            //var latitude = position.coords.latitude;
+            //var longitude = position.coords.longitude;
+                
+        //};
 
         // Showing Location
         function showLocation(position) {
@@ -179,13 +171,19 @@
 
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
                 document.getElementById('output').innerHTML = '<h6>Entered Highway ⚠️</h6>';
-                distanceCalculationActive = true;
-                calculateActive();
+                if (prevLatitude !== null && prevLongitude !== null) {
+                    var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
+                    totalDistance += distance;
+                    document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
+                }
+                    prevLatitude = latitude;
+                    prevLongitude = longitude;
+                //calculateActive();
             }
 
             if (isCrossingLine(finishLineLHS, finishLineRHS, latitude, longitude)) {
                 document.getElementById('output').innerHTML = '<h6>Exited Highway ⚠️</h6>';
-                distanceCalculationActive = false;
+                //distanceCalculationActive = false;
                 stopGeoFence();
             }
 
