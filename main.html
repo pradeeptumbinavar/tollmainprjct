@@ -150,24 +150,23 @@
             });
         }
 
-        //function calculateActive(){
-            //var latitude = position.coords.latitude;
-            //var longitude = position.coords.longitude;
-                //if (prevLatitude !== null && prevLongitude !== null) {
-                    //var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
-                    //totalDistance += distance;
-                    //document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
-                //}
-            //prevLatitude = latitude;
-            //prevLongitude = longitude;
-        //};
+        
 
         // Showing Location
         function showLocation(position) {
+            var speed = position.coords.speed;
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             document.getElementById('location').innerHTML = '<h6>Latitude:</h6> ' + latitude + ', <h6>Longitude:</h6> ' + longitude;
-            var speed = position.coords.speed;
+            function calculateActive(){
+                    if (prevLatitude !== null && prevLongitude !== null) {
+                        var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
+                        totalDistance += distance;
+                        document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
+                    }
+                prevLatitude = latitude;
+                prevLongitude = longitude;
+            };
 
             if (speed !== null) {
                 document.getElementById('speed').innerHTML = '<h6>Speed:</h6> ' + speed.toFixed(2) + ' m/s';
@@ -178,12 +177,7 @@
             if (isCrossingLine(startLineLHS, startLineRHS, latitude, longitude)) {
                 document.getElementById('output').innerHTML = '<h6>Entered Highway ⚠️</h6>';
                 distanceCalculationActive = true;
-                if (prevLatitude !== null && prevLongitude !== null) {
-                    var distance = calculateDistance(prevLatitude, prevLongitude, latitude, longitude);
-                    totalDistance += distance;
-                    document.getElementById('distance').innerHTML = '<h6>Total Distance Traveled :</h6> ' + totalDistance.toFixed(2) + ' meters';
-                }
-                //calculateActive();
+                calculateActive();
             }
 
             if (isCrossingLine(finishLineLHS, finishLineRHS, latitude, longitude)) {
@@ -197,9 +191,6 @@
                 updateUIAndDeductToll();
 
             }
-
-            prevLatitude = latitude;
-            prevLongitude = longitude;
 
             updateMap(latitude, longitude);
 
